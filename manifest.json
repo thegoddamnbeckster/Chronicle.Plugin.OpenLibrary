@@ -1,0 +1,10 @@
+﻿{
+  "plugin_id": "chronicle.plugin.openlibrary",
+  "name": "Open Library",
+  "version": "1.0.0",
+  "author": "thegoddamnbeckster",
+  "description": "Chronicle metadata plugin for Open Library.",
+  "entry_type": "Chronicle.Plugin.OpenLibrary.OpenLibraryPlugin",
+  "min_chronicle_version": "0.6.0",
+  "supported_media_types": ["book"]
+}
