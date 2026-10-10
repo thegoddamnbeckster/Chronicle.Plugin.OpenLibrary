@@ -88,8 +88,8 @@ Requests are paced to match. Chronicle gives a plugin 25 seconds per call, so a 
 of 8 seconds or less is retried once, anything longer is reported as an HTTP 429, and Chronicle then leaves the item **Pending**
 for the next run instead of marking it not found.
 
-A first pass over a large library is slow by design: about **3 hours at 1 request/second** for a library of roughly 750 authors and
-3,900 books, or about 1 hour with a contact email. Entries just fetched are remembered for ten minutes. Open Library's data is
+A first pass over a large library is slow by design: measured on a real library, about **20 items a minute at 1 request/second**,
+so roughly 4 hours for 750 authors and 3,900 books, or about a third of that with a contact email. Entries just fetched are remembered for ten minutes. Open Library's data is
 used through its API only: no HTML is scraped and covers are never downloaded in bulk (Chronicle receives the image URL).
 
 ---
