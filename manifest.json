@@ -1,10 +1,31 @@
-﻿{
-  "plugin_id": "chronicle.plugin.openlibrary",
-  "name": "Open Library",
-  "version": "1.0.0",
-  "author": "thegoddamnbeckster",
-  "description": "Chronicle metadata plugin for Open Library.",
-  "entry_type": "Chronicle.Plugin.OpenLibrary.OpenLibraryPlugin",
-  "min_chronicle_version": "0.6.0",
-  "supported_media_types": ["book"]
+{
+  "plugin_id":   "chronicle.plugin.openlibrary",
+  "name":        "Open Library",
+  "version":     "1.0.0",
+  "author":      "Chronicle Contributors",
+  "description": "Book and author metadata from Open Library: descriptions, covers, authors with biographies and photos, subjects, ratings, series where Open Library has it, and cross-reference ids. No API key or account required. A second source beside Hardcover for books and audiobooks.",
+  "min_chronicle_version": "0.7.0",
+  "entry_type":  "Chronicle.Plugin.OpenLibrary.OpenLibraryMetadataProvider",
+  "iconUrl":     "https://openlibrary.org/static/images/openlibrary-192x192.png",
+  "brandColorLight": "#1B6F45",
+  "brandColorDark":  "#5BC68B",
+  "fixMatchHint": "Enter an Open Library id (OL16114008W for a book, OL6982995A for an author), an openlibrary.org URL, an ISBN-10 or ISBN-13, or goodreads: followed by a Goodreads book id.",
+  "supported_media_types": ["books", "audiobooks"],
+  "background_tasks": [
+    {
+      "task_id":         "fetch-missing-metadata",
+      "display_name":    "Fetch Missing Book Metadata",
+      "description":     "Looks up Open Library metadata for books, audiobooks and authors that have not been enriched by Open Library yet.",
+      "default_cron":    "30 5 * * *",
+      "default_enabled": true
+    },
+    {
+      "task_id":         "resync-all-metadata",
+      "display_name":    "Re-sync All Book Metadata",
+      "description":     "Re-fetches all Open Library metadata to pick up corrected descriptions, covers and ratings. Slow on a large library.",
+      "default_cron":    "40 3 * * 0",
+      "default_enabled": false
+    }
+  ],
+  "settings": []
 }
