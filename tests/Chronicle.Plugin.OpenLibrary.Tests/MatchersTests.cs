@@ -309,4 +309,70 @@ public class MatchersTests
         Assert.Equal(25, Matchers.ChildTitleBonus(["Ubik (1969)"], ["Ubik"]));
         Assert.Equal(25, Matchers.ChildTitleBonus(["A Dance with Dragons, Part 1: Dreams and Dust"], ["A Dance with Dragons"]));
     }
+
+    // ── volumes of one series (2026-10-13: wrong matches found in a real library) ─────────────────────────────────────────
+
+    private static WorkDoc Work(string title, string? subtitle, string author, int? year = 2018) =>
+        new() { Key = "/works/OL1W", Title = title, Subtitle = subtitle, AuthorName = [author], FirstPublishYear = year, EditionCount = 5, Language = ["eng"] };
+
+    private static BookQuery InSeries(string title, string author, int? year = 2018) => new(title, author, year, "eng", InSeries: true);
+
+    [Theory]
+    [InlineData("Space Team: Sentienced to Death", "Space Team: The Time Titan of Tomorrow", "Barry J. Hutchison")]
+    [InlineData("The Sandman: Endless Nights (2003)", "The Sandman - Overture", "Neil Gaiman")]
+    [InlineData("Flashback: Siren Song", "Flashback : The Morrigan", "James A. Hunter")]
+    [InlineData("Binti: Sacred Fire", "Binti: The Night Masquerade", "Nnedi Okorafor")]
+    [InlineData("The Legend of Korra: Ruins of the Empire", "Legend of Korra : The Art of the Animated Series Book Two", "Michael Dante DiMartino")]
+    [InlineData("The Slaver Wars: Endgame", "The Slaver Wars: Retaliation (Volume 5)", "Raymond L. Weil")]
+    public void AnotherVolumeOfTheSameSeries_IsNotTheBook(string wanted, string found, string author)
+    {
+        Assert.True(Matchers.ScoreBook(Work(found, null, author), InSeries(wanted, author)) < 50, found);
+    }
+
+    [Fact]
+    public void ASubtitleKeptInAnotherField_IsStillCompared()
+    {
+        Assert.True(Matchers.ScoreBook(Work("Binti", "The Night Masquerade", "Nnedi Okorafor"), InSeries("Binti: Sacred Fire", "Nnedi Okorafor")) < 50);
+        Assert.True(Matchers.ScoreBook(Work("Binti", "Sacred Fire", "Nnedi Okorafor"), InSeries("Binti: Sacred Fire", "Nnedi Okorafor")) >= 90);
+    }
+
+    [Fact]
+    public void ASubtitleTheWorkLeavesOff_DoesNotCountAgainstIt()
+    {
+        Assert.True(Matchers.ScoreBook(Work("Flashback", null, "James A. Hunter"), InSeries("Flashback: Siren Song", "James A. Hunter")) >= 50);
+        Assert.True(Matchers.ScoreBook(Work("Legion", null, "Brandon Sanderson", 2014), InSeries("Legion: Skin Deep", "Brandon Sanderson", 2014)) >= 50);
+    }
+
+    [Fact]
+    public void TheSameSubtitleWordedDifferently_IsTheSameBook()
+    {
+        Assert.True(Matchers.ScoreBook(Work("Space Team", "The Wrath of Vajazzle", "Barry J. Hutchison"), InSeries("Space Team: Wrath of Vajazzle", "Barry J. Hutchison")) >= 90);
+        Assert.True(Matchers.ScoreBook(Work("Saga", "Volume 4 (Saga #4)", "Brian K. Vaughan"), InSeries("Saga: Volume 4", "Brian K. Vaughan")) >= 50);
+    }
+
+    [Fact]
+    public void AStandaloneBook_IsNotHeldToItsSubtitle()
+    {
+        var doc = Work("Atomic Habits", "Tiny Changes, Remarkable Results", "James Clear");
+        var standalone = new BookQuery("Atomic Habits: An Easy & Proven Way to Build Good Habits & Break Bad Ones", "James Clear", 2018, "eng");
+
+        Assert.True(Matchers.ScoreBook(doc, standalone) >= 80);
+        Assert.True(Matchers.ScoreBook(doc, standalone with { InSeries = true }) < 50);   // the same texts inside a series are two books
+    }
+
+    [Theory]
+    [InlineData("Saga, Vol. 4", "SAGA - Tome 1")]
+    [InlineData("Saga, Vol. 5", "SAGA - Tome 6")]
+    [InlineData("The Old Guard, Book 2: Force Multiplied", "The Old Guard - Tome 03")]
+    [InlineData("Los Juegos del Hambre, Vol. 1", "Los Juegos del Hambre - Libro 2")]
+    public void ADifferentVolumeNumber_InAnotherLanguagesWording_IsAnotherBook(string wanted, string found)
+    {
+        Assert.True(Matchers.ScoreBook(Work(found, null, "Brian K. Vaughan", 2013), InSeries(wanted, "Brian K. Vaughan", 2013)) < 50, found);
+    }
+
+    [Fact]
+    public void TheSameVolumeNumber_InAnotherLanguagesWording_IsNotMarkedDown()
+    {
+        Assert.True(Matchers.ScoreBook(Work("SAGA - Tome 4", null, "Brian K. Vaughan", 2014), InSeries("Saga, Vol. 4", "Brian K. Vaughan", 2014)) >= 50);
+    }
 }

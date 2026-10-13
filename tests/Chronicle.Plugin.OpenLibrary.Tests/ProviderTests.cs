@@ -710,7 +710,7 @@ public class ProviderTests
 
         provider.Configure(new Dictionary<string, string>());
 
-        Assert.Equal("Chronicle-OpenLibrary/1.0.0", provider.ConfiguredUserAgent);
+        Assert.Equal("Chronicle-OpenLibrary/1.0.1", provider.ConfiguredUserAgent);
         Assert.Equal(OpenLibraryClient.DefaultInterval, provider.ConfiguredInterval);
     }
 
@@ -721,7 +721,7 @@ public class ProviderTests
 
         provider.Configure(new Dictionary<string, string> { ["contact_email"] = "  reader@example.org " });
 
-        Assert.Equal("Chronicle-OpenLibrary/1.0.0 (reader@example.org)", provider.ConfiguredUserAgent);
+        Assert.Equal("Chronicle-OpenLibrary/1.0.1 (reader@example.org)", provider.ConfiguredUserAgent);
         Assert.Equal(OpenLibraryClient.IdentifiedInterval, provider.ConfiguredInterval);
     }
 
@@ -739,7 +739,7 @@ public class ProviderTests
 
         provider.Configure(new Dictionary<string, string> { ["contact_email"] = value });
 
-        Assert.Equal("Chronicle-OpenLibrary/1.0.0", provider.ConfiguredUserAgent);
+        Assert.Equal("Chronicle-OpenLibrary/1.0.1", provider.ConfiguredUserAgent);
         Assert.Equal(OpenLibraryClient.DefaultInterval, provider.ConfiguredInterval);
     }
 
@@ -752,7 +752,7 @@ public class ProviderTests
 
         provider.Configure(new Dictionary<string, string> { ["contact_email"] = address });
 
-        Assert.Equal("Chronicle-OpenLibrary/1.0.0", provider.ConfiguredUserAgent);
+        Assert.Equal("Chronicle-OpenLibrary/1.0.1", provider.ConfiguredUserAgent);
         Assert.Equal(OpenLibraryClient.DefaultInterval, provider.ConfiguredInterval);
     }
 

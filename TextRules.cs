@@ -61,7 +61,7 @@ internal static partial class TextRules
 
     // ", Part 2", " Book Three", "Volume 4", "Vol. 4", " #59", " nº 07", " (Book 3)"
     private static readonly Regex PositionMarker = new(
-        @"(\s*[,:;-]?\s*\(?\s*\b(part|book|volume|vol\.?|episode|chapter|no\.?)\s*(\d+|[ivxlc]+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s*\)?|\s*#\s*\d+(\.\d+)?|\s+n[º°o]\.?\s*\d+)\s*$",
+        @"(\s*[,:;-]?\s*\(?\s*\b(part|book|volume|vol\.?|episode|chapter|no\.?|tome|tomo|livre|libro|band|buch|deel|volumen)\s*(\d+|[ivxlc]+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)\s*\)?|\s*#\s*\d+(\.\d+)?|\s+n[º°o]\.?\s*\d+)\s*$",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     /// <summary>The title with a trailing "(YYYY)" removed. The library carries them: "Ubik (1969)".</summary>
@@ -92,7 +92,7 @@ internal static partial class TextRules
     }
 
     private static readonly Regex PositionNumberPattern = new(
-        @"(?:\b(?:part|book|volume|vol\.?|episode|chapter|no\.?)\s*(?<word>\d+|[ivxlc]+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)|#\s*(?<hash>\d+)|\bn[º°o]\.?\s*(?<no>\d+))\s*\)?\s*$",
+        @"(?:\b(?:part|book|volume|vol\.?|episode|chapter|no\.?|tome|tomo|livre|libro|band|buch|deel|volumen)\s*(?<word>\d+|[ivxlc]+|one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)|#\s*(?<hash>\d+)|\bn[º°o]\.?\s*(?<no>\d+))\s*\)?\s*$",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private static readonly string[] NumberWords =
@@ -127,6 +127,56 @@ internal static partial class TextRules
         }
         return total > 0 ? total : null;
     }
+
+    /// <summary>
+    /// What follows the main title ("Siren Song" in "Flashback: Siren Song"), normalised, without any "(Volume 5)"-style
+    /// bracket or position marker; empty when the title has no subtitle.
+    /// </summary>
+    public static string SubtitleKey(string? title) => Normalise(SubtitleText(title));
+
+    private static string SubtitleText(string? title)
+    {
+        var t = StripYearSuffix(title);
+        foreach (var sep in new[] { ":", " - ", " – ", " — " })
+        {
+            var i = t.IndexOf(sep, StringComparison.Ordinal);
+            if (i <= 0) continue;
+            t = t[(i + sep.Length)..];
+            t = Bracketed().Replace(t, " ");
+            t = PositionMarker.Replace(t, "");
+            return t;
+        }
+        return "";
+    }
+
+    /// <summary>
+    /// True when a library title and an Open Library work both carry a subtitle and the two say different things: no one
+    /// contains the other and they share no word of four letters or more. "Space Team: Sentienced to Death" and "Space Team:
+    /// The Time Titan of Tomorrow" share a main title and are two books of one series. A work with no subtitle of its own
+    /// never conflicts (Open Library often leaves them off).
+    /// </summary>
+    public static bool SubtitlesConflict(string? libraryTitle, string? docTitle, string? docSubtitle)
+    {
+        var item = SubtitleText(libraryTitle);
+        var itemKey = Normalise(item);
+        if (itemKey.Length == 0) return false;
+
+        var docTexts = new[] { SubtitleText(docTitle), docSubtitle ?? "" };
+        var any = false;
+        foreach (var text in docTexts)
+        {
+            var key = Normalise(text);
+            if (key.Length == 0) continue;
+            any = true;
+            if (key.Contains(itemKey, StringComparison.Ordinal) || itemKey.Contains(key, StringComparison.Ordinal)) return false;
+            var itemWords = Fold(item).Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => w.Length >= 4).ToHashSet();
+            if (Fold(text).Split(' ', StringSplitOptions.RemoveEmptyEntries).Any(w => w.Length >= 4 && itemWords.Contains(w))) return false;
+        }
+        return any;
+    }
+
+    [GeneratedRegex(@"\([^)]*\)|\[[^\]]*\]")]
+    private static partial Regex Bracketed();
 
     /// <summary>The normalised forms a library title answers to: the whole title and its main title.</summary>
     public static HashSet<string> TitleForms(string? title)

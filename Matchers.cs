@@ -1,7 +1,8 @@
 namespace Chronicle.Plugin.OpenLibrary;
 
 /// <summary>What a book is being looked up by.</summary>
-internal sealed record BookQuery(string Title, string? Author, int? Year, string PreferredLanguage);
+/// <param name="InSeries">The book sits under a series in the library, where one main title is shared by every volume.</param>
+internal sealed record BookQuery(string Title, string? Author, int? Year, string PreferredLanguage, bool InSeries = false);
 
 /// <summary>
 /// Scoring of search results against a library item. Scores run 0 to 99 (100 is reserved for a match by identifier); Chronicle
@@ -15,6 +16,9 @@ internal static class Matchers
     /// <summary>The most a book can score when it names a different volume or issue number than the one wanted: under Chronicle's gate of 50.</summary>
     public const int DifferentVolumeCap = 45;
 
+    /// <summary>The most a book of a series can score when only its main title matches and the two carry different subtitles: under the gate.</summary>
+    public const int DifferentSubtitleCap = 40;
+
     /// <summary>How well an Open Library work matches a library book. 0 means "not this book".</summary>
     public static int ScoreBook(WorkDoc doc, BookQuery q)
     {
@@ -25,8 +29,9 @@ internal static class Matchers
         if (itemFull.Length == 0 || docFull.Length == 0) return 0;
 
         int score;
+        var mainTitleOnly = false;
         if (docFull == itemFull || docForms.Contains(itemFull)) score = 60;
-        else if (itemForms.Overlaps(docForms)) score = 50;
+        else if (itemForms.Overlaps(docForms)) { score = 50; mainTitleOnly = true; }
         else if (Math.Min(itemFull.Length, docFull.Length) >= 6 && (itemFull.Contains(docFull, StringComparison.Ordinal) || docFull.Contains(itemFull, StringComparison.Ordinal)))
             score = 30;
         else return 0;
@@ -57,6 +62,12 @@ internal static class Matchers
         // "Invincible #59" and "Invincible, Vol. 1" share a main title and are different books.
         if (TextRules.PositionNumber(q.Title) is { } wantedNumber && TextRules.PositionNumber(doc.Title) is { } docNumber && wantedNumber != docNumber)
             score = Math.Min(score, DifferentVolumeCap);
+
+        // Volumes of one series share a main title ("Space Team: Sentienced to Death" / "Space Team: The Time Titan of Tomorrow"):
+        // when only the main title matched and each side has a subtitle of its own, they are different books. Outside a series
+        // the same difference is usually a US and a UK edition of one book, so it is not held against a standalone title.
+        if (q.InSeries && mainTitleOnly && TextRules.SubtitlesConflict(q.Title, doc.Title, doc.Subtitle))
+            score = Math.Min(score, DifferentSubtitleCap);
 
         // A book by a different author is a different book, however alike the titles: never at or above Chronicle's gate.
         if (authorMismatch) score = Math.Min(score, 35);

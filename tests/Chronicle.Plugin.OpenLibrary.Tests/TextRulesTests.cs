@@ -339,4 +339,34 @@ public class OlRefTests
     [InlineData("97803161290841")]
     [InlineData("abcdefghij")]
     public void SomethingElse_IsRefused(string? text) => Assert.Null(OlRef.Parse(text));
+
+    [Theory]
+    [InlineData("Flashback: Siren Song", "sirensong")]
+    [InlineData("The Sandman - Overture", "overture")]
+    [InlineData("Orbs: White Sands and Red Sands (2018)", "whitesandsandredsands")]
+    [InlineData("Space Team: Book Three", "")]
+    [InlineData("Slaver Wars: Retaliation (Volume 5)", "retaliation")]
+    [InlineData("Ubik", "")]
+    [InlineData("", "")]
+    [InlineData(null, "")]
+    public void TheSubtitleKey_IsWhatFollowsTheMainTitle(string? title, string expected) => Assert.Equal(expected, TextRules.SubtitleKey(title));
+
+    [Theory]
+    [InlineData("Saga, Vol. 4", 4)]
+    [InlineData("SAGA - Tome 1", 1)]
+    [InlineData("The Old Guard - Tome 02", 2)]
+    [InlineData("Los Juegos del Hambre - Libro 3", 3)]
+    [InlineData("Die Tribute von Panem - Band 2", 2)]
+    [InlineData("Pathos Volume 2", 2)]
+    public void VolumeNumbers_AreRead_InSeveralLanguages(string title, int expected) => Assert.Equal(expected, TextRules.PositionNumber(title));
+
+    [Theory]
+    [InlineData("Space Team: Sentienced to Death", "Space Team: The Time Titan of Tomorrow", null, true)]
+    [InlineData("Space Team: Sentienced to Death", "Space Team", null, false)]
+    [InlineData("Space Team: Sentienced to Death", "Space Team", "Sentienced to Death", false)]
+    [InlineData("Space Team: Sentienced to Death", "Space Team", "A Different Story", true)]
+    [InlineData("Space Team: The Wrath of Vajazzle", "Space Team", "Wrath of Vajazzle", false)]
+    [InlineData("Ubik", "Ubik: A Novel", null, false)]
+    public void SubtitlesConflict_OnlyWhenBothSideSaySomethingDifferent(string library, string docTitle, string? docSubtitle, bool expected) =>
+        Assert.Equal(expected, TextRules.SubtitlesConflict(library, docTitle, docSubtitle));
 }

@@ -25,7 +25,7 @@ public sealed class OpenLibraryMetadataProvider : IMetadataProvider, IDisposable
 {
     public string PluginId => "chronicle.plugin.openlibrary";
     public string Name     => "Open Library";
-    public string Version  => "1.0.0";
+    public string Version  => "1.0.1";
     public string Author   => "Chronicle Contributors";
 
     public const string KeyContactEmail = "contact_email";
@@ -177,7 +177,7 @@ public sealed class OpenLibraryMetadataProvider : IMetadataProvider, IDisposable
         var isFreeSearch = context.HierarchyLevel == 0 && !context.IsRealHierarchyPosition && context.ParentName is null;
         if (isFreeSearch)
         {
-            var books = await SearchBooksAsync(titles, null, context.Year, authorOptional: true, ct).ConfigureAwait(false);
+            var books = await SearchBooksAsync(titles, null, context.Year, authorOptional: true, inSeries: false, ct).ConfigureAwait(false);
             // The year of a free-text search is a book's, not an author's birth year, so it is not used to judge authors.
             var authors = await SearchAuthorsAsync(titles[0], context, null, ct).ConfigureAwait(false);
             return books.Concat(authors).OrderByDescending(c => c.Score).Take(MaxCandidates).ToList();
@@ -190,10 +190,10 @@ public sealed class OpenLibraryMetadataProvider : IMetadataProvider, IDisposable
 
             // Level 1 is a series (returned above) unless it holds nothing, in which case it is a standalone book under its author.
             case 1:
-                return await SearchBooksAsync(titles, context.ParentName, context.Year, authorOptional: false, ct).ConfigureAwait(false);
+                return await SearchBooksAsync(titles, context.ParentName, context.Year, authorOptional: false, inSeries: false, ct).ConfigureAwait(false);
 
             default:
-                return await SearchBooksAsync(titles, context.GrandparentName, context.Year, authorOptional: false, ct).ConfigureAwait(false);
+                return await SearchBooksAsync(titles, context.GrandparentName, context.Year, authorOptional: false, inSeries: true, ct).ConfigureAwait(false);
         }
     }
 
@@ -228,13 +228,13 @@ public sealed class OpenLibraryMetadataProvider : IMetadataProvider, IDisposable
     }
 
     private async Task<IReadOnlyList<ScoredCandidate>> SearchBooksAsync(
-        List<string> titles, string? author, int? year, bool authorOptional, CancellationToken ct)
+        List<string> titles, string? author, int? year, bool authorOptional, bool inSeries, CancellationToken ct)
     {
         var scored = new Dictionary<string, (WorkDoc Doc, int Score, string Wording)>(StringComparer.Ordinal);
 
         foreach (var title in titles)
         {
-            var query = new BookQuery(title, string.IsNullOrWhiteSpace(author) ? null : TextRules.TidyName(author), year, _preferredLanguage);
+            var query = new BookQuery(title, string.IsNullOrWhiteSpace(author) ? null : TextRules.TidyName(author), year, _preferredLanguage, inSeries);
 
             // The main title first: long subtitles and "Part 2" markers break the search. Then the whole title.
             var main = TextRules.MainTitle(title);

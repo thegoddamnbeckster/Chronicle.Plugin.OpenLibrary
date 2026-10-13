@@ -7,7 +7,7 @@ Book and author metadata plugin for [Chronicle](https://github.com/thegoddamnbec
 Fetches book and author metadata — descriptions, covers, authors with biographies and photos, genres, subjects, ratings, series where Open Library has it, and cross-reference ids — from [Open Library](https://openlibrary.org/). A second source beside Hardcover for books and audiobooks, with no API key and no quota.
 
 **Plugin ID:** `chronicle.plugin.openlibrary`
-**Version:** 1.0.0
+**Version:** 1.0.1
 **Auth:** None (no API key or account required)
 
 ---
@@ -54,6 +54,8 @@ the whole title is only tried when the main title finds nothing. Results are sco
 * the title matches (whole title, or main title, or subtitle form) and the author matches (any listed name or alternate name);
 * a book by a **different author** is never accepted, however alike the title ("The Outpost" by Mike Resnick is not by Rick Partlow);
 * a different volume or issue number is a different book ("Invincible #59" is not "Invincible, Vol. 1");
+  (also in other languages' wording: "Tome 1", "Libro 2", "Band 3")
+* inside a series, a work with a **different subtitle** is another volume: "Space Team: Sentienced to Death" is not "Space Team: The Time Titan of Tomorrow" (a work that has no subtitle of its own, or a standalone book, is not held to this);
 * study guides, "Summary of ...", workbooks, box sets, omnibuses and anthologies rank below the book itself;
 * a result that exists in your preferred language ranks above one that does not (nothing is hidden);
 * a close publication year and a large edition count help a little.
