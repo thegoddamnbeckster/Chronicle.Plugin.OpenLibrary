@@ -25,7 +25,7 @@ public sealed class OpenLibraryMetadataProvider : IMetadataProvider, IDisposable
 {
     public string PluginId => "chronicle.plugin.openlibrary";
     public string Name     => "Open Library";
-    public string Version  => "1.0.1";
+    public string Version  => "1.0.2";
     public string Author   => "Chronicle Contributors";
 
     public const string KeyContactEmail = "contact_email";

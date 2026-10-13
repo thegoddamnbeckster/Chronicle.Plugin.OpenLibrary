@@ -375,4 +375,32 @@ public class MatchersTests
     {
         Assert.True(Matchers.ScoreBook(Work("SAGA - Tome 4", null, "Brian K. Vaughan", 2014), InSeries("Saga, Vol. 4", "Brian K. Vaughan", 2014)) >= 50);
     }
+
+    // ── a title that merely appears inside another (2026-10-13: ~130 series and stories matched to one of their books) ───
+
+    [Theory]
+    [InlineData("Galaxy's Edge", "Legionnaire (Galaxy's Edge)", "Jason Anspach")]
+    [InlineData("Mirror Image", "The Best of Isaac Asimov 1954-1972 (Anniversary / The Billiard Ball / The Last Question / Mirror-Image)", "Isaac Asimov")]
+    [InlineData("Muad Dib", "Songs of Muad'dib", "Frank Herbert")]
+    [InlineData("The Divine Dungeon", "Dungeon Calamity (The Divine Dungeon)", "Dakota Krout")]
+    [InlineData("The Dagger and the Coin", "The King's Blood (The Dagger and the Coin #2)", "Daniel Abraham")]
+    public void AnItemNamedInsideAnotherTitle_IsNotThatBook(string wanted, string found, string author)
+    {
+        Assert.True(Matchers.ScoreBook(Work(found, null, author), new BookQuery(wanted, author, 2018, "eng")) < 50, found);
+    }
+
+    [Theory]
+    [InlineData("The Dark Forest (2008)", "The Dark Forest (The Three-Body Problem Series Book 2)")]
+    [InlineData("Atomic habits", "Atomic Habits: Tiny Changes, Remarkable Results")]
+    [InlineData("The Night Masquerade", "Binti: The Night Masquerade")]
+    public void AContinuedOrSubtitleTitle_IsStillTheBook(string wanted, string found)
+    {
+        Assert.True(Matchers.ScoreBook(Work(found, null, "A. Author"), new BookQuery(wanted, "A. Author", 2018, "eng")) >= 50, found);
+    }
+
+    [Fact]
+    public void TheSubtitleOfTheWork_CanBeTheLibraryTitle()
+    {
+        Assert.True(Matchers.ScoreBook(Work("Binti", "The Night Masquerade", "A. Author"), new BookQuery("The Night Masquerade", "A. Author", 2018, "eng")) >= 50);
+    }
 }

@@ -1,7 +1,7 @@
 {
   "plugin_id":   "chronicle.plugin.openlibrary",
   "name":        "Open Library",
-  "version":     "1.0.1",
+  "version":     "1.0.2",
   "author":      "Chronicle Contributors",
   "description": "Book and author metadata from Open Library: descriptions, covers, authors with biographies and photos, subjects, ratings, series where Open Library has it, and cross-reference ids. No API key or account required. A second source beside Hardcover for books and audiobooks.",
   "min_chronicle_version": "0.7.0",

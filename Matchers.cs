@@ -32,7 +32,13 @@ internal static class Matchers
         var mainTitleOnly = false;
         if (docFull == itemFull || docForms.Contains(itemFull)) score = 60;
         else if (itemForms.Overlaps(docForms)) { score = 50; mainTitleOnly = true; }
-        else if (Math.Min(itemFull.Length, docFull.Length) >= 6 && (itemFull.Contains(docFull, StringComparison.Ordinal) || docFull.Contains(itemFull, StringComparison.Ordinal)))
+        // One title continuing the other ("The Dark Forest" / "The Dark Forest (The Three-Body Problem Series Book 2)"), or the
+        // library title being the work's subtitle ("The Night Masquerade" / "Binti: The Night Masquerade") -- never one merely
+        // appearing somewhere inside the other. A series named "Galaxy's Edge" is not "Legionnaire (Galaxy's Edge)", "Mirror Image"
+        // is not "The Best of Isaac Asimov (... / Mirror-Image)", and "Muad Dib" is not "Songs of Muad'dib".
+        else if ((Math.Min(itemFull.Length, docFull.Length) >= 6
+                  && (itemFull.StartsWith(docFull, StringComparison.Ordinal) || docFull.StartsWith(itemFull, StringComparison.Ordinal)))
+                 || (itemFull.Length >= 6 && (TextRules.SubtitleKey(doc.Title) == itemFull || TextRules.Normalise(doc.Subtitle) == itemFull)))
             score = 30;
         else return 0;
 

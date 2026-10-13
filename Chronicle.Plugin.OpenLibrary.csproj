@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Chronicle.Plugin.OpenLibrary</AssemblyName>
     <RootNamespace>Chronicle.Plugin.OpenLibrary</RootNamespace>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>Chronicle Contributors</Authors>
     <Description>Open Library book and author metadata plugin for Chronicle. No API key required.</Description>
   </PropertyGroup>
