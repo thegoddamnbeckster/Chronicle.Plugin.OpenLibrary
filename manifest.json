@@ -6,6 +6,11 @@
   "description": "Book and author metadata from Open Library: descriptions, covers, authors with biographies and photos, subjects, ratings, series where Open Library has it, and cross-reference ids. No API key or account required. A second source beside Hardcover for books and audiobooks.",
   "min_chronicle_version": "0.7.0",
   "entry_type":  "Chronicle.Plugin.OpenLibrary.OpenLibraryMetadataProvider",
+  "sourceUrls": [
+    { "match": "^OL\\d+A$", "url": "https://openlibrary.org/authors/$0" },
+    { "match": "^OL\\d+W$", "url": "https://openlibrary.org/works/$0" },
+    { "match": "^OL\\d+M$", "url": "https://openlibrary.org/books/$0" }
+  ],
   "iconUrl":     "https://openlibrary.org/static/images/openlibrary-192x192.png",
   "brandColorLight": "#1B6F45",
   "brandColorDark":  "#5BC68B",
