@@ -82,15 +82,16 @@ public class MapperTests
     }
 
     [Fact]
-    public void TheIsbnsStored_AreCapped_AndTheTrueCountKept()
+    public void EveryIsbnIsStored_AndTheCountMatches()
     {
         var doc = Doc("search_isbn.json", "OL16114008W");
-        Assert.True(doc.Isbn!.Count > MetadataMapper.MaxStoredIsbns);
+        Assert.True(doc.Isbn!.Count > 30, "the fixture must have more ISBNs than the old cap of 30, or this proves nothing");
 
         var ext = Ext(MetadataMapper.Work(doc, null, null, "OL16114008W"));
 
-        Assert.Equal(MetadataMapper.MaxStoredIsbns, ext.GetProperty("isbn").GetArrayLength());
+        Assert.Equal(doc.Isbn.Count, ext.GetProperty("isbn").GetArrayLength());
         Assert.Equal(doc.Isbn.Count, ext.GetProperty("isbn_count").GetInt32());
+        Assert.Equal(doc.Isbn, ext.GetProperty("isbn").EnumerateArray().Select(e => e.GetString()).ToList());
     }
 
     [Fact]

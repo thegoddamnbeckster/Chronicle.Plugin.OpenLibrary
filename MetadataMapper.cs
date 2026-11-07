@@ -13,7 +13,6 @@ internal sealed record SeriesInfo(string? Name, string? Key, string? Position);
 internal static class MetadataMapper
 {
     public const string Source = "openlibrary";
-    public const int MaxStoredIsbns = 30;
 
     // ── books ─────────────────────────────────────────────────────────────────
 
@@ -73,7 +72,7 @@ internal static class MetadataMapper
             ["first_publish_year"] = doc?.FirstPublishYear ?? TextRules.YearOf(record?.FirstPublishDate),
             ["ratings_average"] = doc?.RatingsAverage,
             ["ratings_count"] = doc?.RatingsCount,
-            ["isbn"] = doc?.Isbn?.Take(MaxStoredIsbns).ToList(),
+            ["isbn"] = doc?.Isbn?.ToList(),   // every ISBN OpenLibrary lists, however many
             ["isbn_count"] = doc?.Isbn?.Count,
             ["subjects"] = subjects.Count > 0 ? subjects : null,
             ["links"] = record?.Links?.Where(l => !string.IsNullOrWhiteSpace(l.Url)).Select(l => new { title = l.Title, url = l.Url }).ToList(),
