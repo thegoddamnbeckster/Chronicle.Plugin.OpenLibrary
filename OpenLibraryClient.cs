@@ -134,7 +134,8 @@ internal sealed class OpenLibraryClient : IDisposable
                     continue;
                 }
                 throw new HttpRequestException(
-                    $"Open Library is rate limiting requests (retry in about {wait.TotalSeconds:0}s)", null, HttpStatusCode.TooManyRequests);
+                    $"Open Library is rate limiting requests (retry in about {wait.TotalSeconds:0}s)", null, HttpStatusCode.TooManyRequests)
+                    { Data = { ["RetryAfter"] = wait } };
             }
 
             if (!response.IsSuccessStatusCode)

@@ -91,6 +91,7 @@ public class ClientTests
         var error = await Assert.ThrowsAsync<HttpRequestException>(() => client.GetWorkAsync("OL16114008W", CancellationToken.None));
 
         Assert.Equal(HttpStatusCode.TooManyRequests, error.StatusCode);
+        Assert.Equal(TimeSpan.FromSeconds(60), error.Data["RetryAfter"]);   // what Open Library asked for, so Chronicle's queue holds the item that long
         Assert.True(clock.Elapsed < TimeSpan.FromSeconds(5));
         Assert.Equal(1, fake.Requests);
     }
